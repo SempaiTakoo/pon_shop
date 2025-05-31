@@ -1,0 +1,38 @@
+services:
+  user_service_db:
+    image: postgres:latest
+    networks:
+      - kafka-net
+    container_name: user_service_db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - .env
+    ports:
+      - "${DB_PORT}:5432"
+
+  user_service:
+    build: .
+    networks:
+      - kafka-net
+    container_name: user_service
+    restart: always
+    depends_on:
+      - user_service_db
+    env_file:
+      - .env
+    ports:
+      - "${PORT}:8000"
+
+volumes:
+  pgdata:
+
+networks:
+  kafka-net:
+    name: kafka-net
+    driver: bridge
+    external: true
